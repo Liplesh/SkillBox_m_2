@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.example.app.services.BookService;
 import org.example.web.dto.Book;
 import org.example.web.dto.BookIdToRemove;
+import org.example.web.dto.BookRegexToRemove;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -35,20 +36,17 @@ public class BookShelfController {
         logger.info(this.toString());
         model.addAttribute("book", new Book());
         model.addAttribute("bookIdToRemove", new BookIdToRemove());
+        model.addAttribute("bookRegexToRemove", new BookRegexToRemove());
         model.addAttribute("bookList", bookService.getAllBooks());
         return "book_shelf";
-    }
-
-    @GetMapping("/empty")
-    public String isEmpty() {
-        return "empty_page";
     }
 
     @PostMapping("/save")
     public String saveBook(@Valid Book book, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("book", new Book());
+            model.addAttribute("book", book);
             model.addAttribute("bookIdToRemove", new BookIdToRemove());
+            model.addAttribute("bookRegexToRemove", new BookRegexToRemove());
             model.addAttribute("bookList", bookService.getAllBooks());
             return "book_shelf";
         } else {
@@ -56,14 +54,6 @@ public class BookShelfController {
             logger.info("List Size: " + bookService.getAllBooks().size());
             return "redirect:/books/shelf";
         }
-//        if (!bookService.isBookEmpty(book)) {
-//            bookService.saveBook(book);
-//            logger.info("List Size: " + bookService.getAllBooks().size());
-//            return "redirect:/books/shelf";
-//        } else {
-//            logger.info("book isEmpty" );
-//            return "redirect:/books/empty";
-//        }
     }
 
     @PostMapping("/remove")
@@ -71,9 +61,10 @@ public class BookShelfController {
         //Валидация, если есть ошибки
         if (bindingResult.hasErrors()) {
             model.addAttribute("book", new Book());
+            model.addAttribute("bookIdToRemove", bookIdToRemove);
+            model.addAttribute("bookRegexToRemove", new BookRegexToRemove());
             model.addAttribute("bookList", bookService.getAllBooks());
             return "book_shelf";
-
         }
         //Если нет ошибки
         else {
@@ -83,10 +74,18 @@ public class BookShelfController {
     }
 
     @PostMapping("/removeByRegex")
-    public String removeBookByRegex(@RequestParam(value = "queryRegex") String regex){
-        bookService.removeBookByRegex(regex);
-        logger.info("remove regex: " + regex);
-        return "redirect:/books/shelf";
+    public String removeBookByRegex(@Valid BookRegexToRemove bookRegexToRemove, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("book", new Book());
+            model.addAttribute("bookIdToRemove", new BookIdToRemove());
+            model.addAttribute("bookRegexToRemove", bookRegexToRemove);
+            model.addAttribute("bookList", bookService.getAllBooks());
+            return "book_shelf";
+        } else {
+            bookService.removeBookByRegex(bookRegexToRemove.getRegex());
+            logger.info("remove regex: " + bookRegexToRemove.getRegex());
+            return "redirect:/books/shelf";
+        }
     }
 
 }
