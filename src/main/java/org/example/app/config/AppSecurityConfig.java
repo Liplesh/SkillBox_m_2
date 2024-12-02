@@ -23,8 +23,8 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
         log.info("config in memory auth user");
         auth
                 .inMemoryAuthentication()
-                .withUser("root")
-                .password(passwordEncoder().encode("123"))
+                .withUser("1")
+                .password(passwordEncoder().encode("1"))
                 .roles("USER");
         log.debug("****After config in memory auth");
     }
@@ -37,6 +37,7 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         log.info("config http security");
+        http.headers().frameOptions().disable(); //Позволит интерфейсу базы данных рендерится корректно
         http
                 .csrf()
                 .disable()

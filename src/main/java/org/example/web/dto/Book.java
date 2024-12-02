@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 import java.util.UUID;
 
 public class Book {
-    private String id;
+    private Integer id;
     @NotEmpty
     private String title;
     @NotEmpty
@@ -17,11 +17,11 @@ public class Book {
     public Book() {
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
