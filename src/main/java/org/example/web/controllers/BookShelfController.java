@@ -6,6 +6,7 @@ import org.example.app.services.BookService;
 import org.example.web.dto.Book;
 import org.example.web.dto.BookIdToRemove;
 import org.example.web.dto.BookRegexToRemove;
+import org.example.web.dto.FileToUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -15,8 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 
 @Controller
 @RequestMapping(value = "books")
@@ -38,6 +43,7 @@ public class BookShelfController {
         model.addAttribute("bookIdToRemove", new BookIdToRemove());
         model.addAttribute("bookRegexToRemove", new BookRegexToRemove());
         model.addAttribute("bookList", bookService.getAllBooks());
+        model.addAttribute("fileToUpload", new FileToUpload());
         return "book_shelf";
     }
 
@@ -48,6 +54,7 @@ public class BookShelfController {
             model.addAttribute("bookIdToRemove", new BookIdToRemove());
             model.addAttribute("bookRegexToRemove", new BookRegexToRemove());
             model.addAttribute("bookList", bookService.getAllBooks());
+            model.addAttribute("fileToUpload", new FileToUpload());
             return "book_shelf";
         } else {
             bookService.saveBook(book);
@@ -64,6 +71,7 @@ public class BookShelfController {
             model.addAttribute("bookIdToRemove", bookIdToRemove);
             model.addAttribute("bookRegexToRemove", new BookRegexToRemove());
             model.addAttribute("bookList", bookService.getAllBooks());
+            model.addAttribute("fileToUpload", new FileToUpload());
             return "book_shelf";
         }
         //Если нет ошибки
@@ -80,6 +88,7 @@ public class BookShelfController {
             model.addAttribute("bookIdToRemove", new BookIdToRemove());
             model.addAttribute("bookRegexToRemove", bookRegexToRemove);
             model.addAttribute("bookList", bookService.getAllBooks());
+            model.addAttribute("fileToUpload", new FileToUpload());
             return "book_shelf";
         } else {
             bookService.removeBookByRegex(bookRegexToRemove.getRegex());
@@ -88,4 +97,40 @@ public class BookShelfController {
         }
     }
 
+    @PostMapping("/uploadFile")
+    public String uploadFile(@Valid FileToUpload fileToUpload, BindingResult bindingResult, Model model) throws Exception {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("book", new Book());
+            model.addAttribute("bookIdToRemove", new BookIdToRemove());
+            model.addAttribute("bookRegexToRemove", new BookRegexToRemove());
+            model.addAttribute("bookList", bookService.getAllBooks());
+            model.addAttribute("fileToUpload", fileToUpload);
+            return "book_shelf";
+        } else {
+            MultipartFile file = fileToUpload.getFile();
+            String name = file.getOriginalFilename();
+            logger.debug("***DEBUG file name = " + name);
+            byte[] bytes = file.getBytes();
+
+            //create dir
+            String rootPath = System.getProperty("catalina.home");
+            File dir = new File(rootPath + File.separator + "external_uploads");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            logger.debug("***DEBUG create dir");
+
+            //create file
+            File serverFile = new File(dir.getAbsolutePath() + File.separator + name);
+            logger.debug("***DEBUG create new File");
+            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+            stream.write(bytes);
+            stream.close();
+            logger.debug("***DEBUG stream.close");
+
+            logger.info("new file saved at: " + serverFile.getAbsolutePath());
+
+            return "redirect:/books/shelf";
+        }
+    }
 }

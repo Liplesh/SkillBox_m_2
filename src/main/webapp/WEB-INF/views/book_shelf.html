@@ -37,11 +37,16 @@
             <tr>
                 <td>
                     <input type="text" placeholder="author" th:field="*{author}">
-                    <p th:if="${#fields.hasErrors('author')}">author is Empty</p>
+                    <p th:if="${#fields.hasErrors('author')}" th:each="err : ${#fields.errors('author')}">
+                        <span th:text="${err}"></span>
+                    </p>
                 </td>
                 <td>
                     <input type="text" placeholder="book_title" th:field="*{title}">
-                    <p th:if="${#fields.hasErrors('title')}">title is Empty</p>
+                    <!-- Проверка на ошибки поля title -->
+                    <p th:if="${#fields.hasErrors('title')}" th:each="err : ${#fields.errors('title')}">
+                        <span th:text="${err}"></span>
+                    </p>
                 </td>
                 <td>
                     <input type="text" placeholder="size (pages)" th:field="*{size}">
@@ -83,6 +88,22 @@
                 </td>
                 <td th:if="${#fields.hasErrors()}">
                     <p>Empty regex</p>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <form method="post" th:action="@{/books/uploadFile}" enctype="multipart/form-data" th:object="${fileToUpload}">
+        <table>
+            <tr>
+                <td>
+                    <input type="file" th:field="*{file}"/>
+                    </td>
+                <td>
+                    <input type="submit" value="upload"/>
+                </td>
+                <td th:if="${#fields.hasErrors()}">
+                    <p>file is null</p>
                 </td>
             </tr>
         </table>

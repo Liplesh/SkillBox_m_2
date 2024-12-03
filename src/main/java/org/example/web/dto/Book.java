@@ -3,13 +3,17 @@ package org.example.web.dto;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 import java.util.UUID;
 
 public class Book {
+
     private Integer id;
-    @NotEmpty
+    @NotEmpty(message = "title is empty")
+    @Pattern(regexp = "^[a-zA-ZА-Яа-яЁё\\s]+$", message = "title is String")
     private String title;
-    @NotEmpty
+    @NotEmpty(message = "author is empty")
+    @Pattern(regexp = "^[a-zA-ZА-Яа-яЁё\\s]+$", message = "author is String")
     private String author;
     @Digits(integer = 4, fraction = 0)
     private Integer size;
